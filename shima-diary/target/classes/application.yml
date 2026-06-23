@@ -1,0 +1,107 @@
+server:
+  port: 8080
+  address: 0.0.0.0
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: shima-diary
+  
+  # 禁用Elasticsearch自动配置（当ES不可用时）
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.data.elasticsearch.config.ElasticsearchConfiguration
+  
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/shima_diary?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: lhh1920192508
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+# Elasticsearch配置（可选，默认禁用）
+# 启用时设置 elasticsearch.enabled=true
+elasticsearch:
+  enabled: false
+  uris: localhost:9200
+  connection-timeout: 5s
+  socket-timeout: 30s
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-aliases-package: com.shima.diary.entity
+  mapper-locations: classpath:mapper/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# 缓存配置
+cache:
+  type: redis
+  redis:
+    time-to-live: 3600000ms  # 默认缓存过期时间1小时
+    cache-null-values: false
+    use-key-prefix: true
+    key-prefix: "shima_diary:"
+
+# AI配置
+ai:
+  enabled: false  # 是否启用AI功能，默认false使用模拟响应
+  provider: mock  # AI提供商: openai, wenxin, qianwen, mock
+  # OpenAI配置
+  openai:
+    api-key: your-openai-api-key-here
+    model: gpt-3.5-turbo
+    base-url: https://api.openai.com/v1
+    max-tokens: 2000
+    temperature: 0.7
+  # 文心一言配置
+  wenxin:
+    api-key: your-wenxin-api-key-here
+    secret-key: your-wenxin-secret-key-here
+    model: ernie-bot-turbo
+    max-tokens: 2000
+    temperature: 0.7
+  # 通义千问配置
+  qianwen:
+    api-key: your-qianwen-api-key-here
+    model: qwen-turbo
+    max-tokens: 2000
+    temperature: 0.7
+  # 模拟响应配置
+  mock:
+    response-delay: 500  # 模拟延迟（毫秒）
+
+logging:
+  level:
+    com.shima.diary: debug

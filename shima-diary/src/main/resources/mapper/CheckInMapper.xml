@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shima.diary.mapper.CheckInMapper">
+
+    <resultMap id="CheckInResultMap" type="com.shima.diary.entity.CheckIn">
+        <id property="id" column="id"/>
+        <result property="checkDate" column="check_date"/>
+        <result property="checkType" column="check_type"/>
+        <result property="checkName" column="check_name"/>
+        <result property="description" column="description"/>
+        <result property="duration" column="duration"/>
+        <result property="score" column="score"/>
+        <result property="location" column="location"/>
+        <result property="userId" column="user_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <select id="selectByDate" resultMap="CheckInResultMap">
+        SELECT * FROM check_in
+        WHERE user_id = #{userId}
+          AND check_date = #{checkDate}
+          AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="countContinuousDays" resultType="int">
+        SELECT COUNT(DISTINCT check_date)
+        FROM check_in
+        WHERE user_id = #{userId}
+          AND check_type = #{checkType}
+          AND deleted = 0
+          AND check_date &lt;= CURDATE()
+          AND check_date >= (
+              SELECT check_date FROM check_in
+              WHERE user_id = #{userId}
+                AND check_type = #{checkType}
+                AND deleted = 0
+              ORDER BY check_date DESC
+              LIMIT 1
+          )
+    </select>
+
+    <select id="selectCheckInStats" resultType="java.util.Map">
+        SELECT 
+            check_type AS checkType,
+            check_name AS checkName,
+            COUNT(*) AS totalDays,
+            MIN(check_date) AS startDate,
+            MAX(check_date) AS lastDate,
+            AVG(score) AS avgScore
+        FROM check_in
+        WHERE user_id = #{userId} AND deleted = 0
+        GROUP BY check_type, check_name
+    </select>
+
+</mapper>
